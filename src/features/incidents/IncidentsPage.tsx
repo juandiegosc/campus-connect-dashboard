@@ -24,7 +24,9 @@ const schema = z
     studentId: z.string().length(26, 'Elegí un estudiante de la lista.'),
     type: z.string().min(1, 'Elegí el tipo de incidente.'),
     customType: z.string().optional(),
-    severity: z.enum(['Low', 'Medium', 'High']),
+    severity: z
+      .string()
+      .refine((v) => ['Low', 'Medium', 'High'].includes(v), 'Elegí la severidad.'),
     description: z.string().min(1, 'Describí el incidente.'),
   })
   .refine((d) => d.type !== 'Otro' || (d.customType?.trim().length ?? 0) > 0, {
@@ -46,7 +48,7 @@ export function IncidentsPage() {
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { studentId: '', type: '', customType: '', severity: 'Low', description: '' },
+    defaultValues: { studentId: '', type: '', customType: '', severity: '', description: '' },
   })
 
   const typeValue = watch('type')
@@ -137,6 +139,7 @@ export function IncidentsPage() {
 
               <Field label="Severidad" error={errors.severity?.message}>
                 <select {...register('severity')} className={controlClass}>
+                  <option value="">Seleccioná la severidad</option>
                   <option value="Low">Baja</option>
                   <option value="Medium">Media</option>
                   <option value="High">Alta</option>
