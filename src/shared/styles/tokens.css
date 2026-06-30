@@ -1,0 +1,44 @@
+@import 'tailwindcss';
+
+/* Design tokens UDLA — base reutilizable por los 3 portales.
+   Colores y tipografías derivados de la identidad universitaria (vino + oro). */
+@theme {
+  --color-vino: #7a1b2e;
+  --color-vino-dark: #4e0f1c;
+  --color-vino-soft: #f1e3e6;
+  --color-oro: #b0892f;
+  --color-oro-soft: #e9c66b;
+
+  --color-ink: #1c2230;
+  --color-muted: #5b6472;
+  --color-line: #e4e7ec;
+  --color-panel: #f5f6f8;
+
+  --color-present: #2e7d52;
+  --color-present-bg: #e6f2ec;
+  --color-present-ink: #1c5238;
+  --color-absent: #b3261e;
+  --color-absent-bg: #f7e9e8;
+  --color-absent-ink: #7a1a17;
+  --color-late: #b0892f;
+  --color-late-bg: #f6eedd;
+  --color-late-ink: #6e5418;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Spectral', Georgia, serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+  }
+  body {
+    margin: 0;
+    background: var(--color-panel);
+  }
+  *:focus-visible {
+    outline: 2px solid var(--color-oro);
+    outline-offset: 2px;
+  }
+}
