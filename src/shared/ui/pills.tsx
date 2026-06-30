@@ -8,7 +8,7 @@ const statusMap: Record<AttendanceStatus, { label: string; cls: string }> = {
 
 export function StatusPill({ status }: { status: AttendanceStatus }) {
   const m = statusMap[status]
-  return <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${m.cls}`}>{m.label}</span>
+  return <span className={`rounded-lg px-3 py-1 text-sm font-medium ${m.cls}`}>{m.label}</span>
 }
 
 const severityMap: Record<IncidentSeverity, { label: string; cls: string }> = {
@@ -19,5 +19,5 @@ const severityMap: Record<IncidentSeverity, { label: string; cls: string }> = {
 
 export function SeverityPill({ severity }: { severity: IncidentSeverity }) {
   const m = severityMap[severity]
-  return <span className={`rounded-lg px-2 py-0.5 text-xs font-medium ${m.cls}`}>{m.label}</span>
+  return <span className={`rounded-lg px-3 py-1 text-sm font-medium ${m.cls}`}>{m.label}</span>
 }

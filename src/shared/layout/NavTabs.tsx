@@ -1,30 +1,33 @@
 import { NavLink } from 'react-router-dom'
 
 const tabs = [
-  { to: '/', label: 'Asistencia', end: true },
-  { to: '/incidentes', label: 'Incidentes', end: false },
-  { to: '/estudiantes', label: 'Estudiantes', end: false },
+  { to: '/', label: 'Asistencia', icon: 'ti-checklist', end: true },
+  { to: '/incidentes', label: 'Incidentes', icon: 'ti-flag', end: false },
+  { to: '/estudiantes', label: 'Estudiantes', icon: 'ti-users', end: false },
 ]
 
 export function NavTabs() {
   return (
-    <nav className="flex gap-6 border-b border-line bg-white px-4">
-      {tabs.map((tab) => (
-        <NavLink
-          key={tab.to}
-          to={tab.to}
-          end={tab.end}
-          className={({ isActive }) =>
-            `border-b-2 py-3 text-sm ${
-              isActive
-                ? 'border-oro font-medium text-vino'
-                : 'border-transparent text-muted hover:text-ink'
-            }`
-          }
-        >
-          {tab.label}
-        </NavLink>
-      ))}
+    <nav className="border-b border-line bg-white">
+      <div className="mx-auto flex max-w-6xl gap-8 px-6">
+        {tabs.map((tab) => (
+          <NavLink
+            key={tab.to}
+            to={tab.to}
+            end={tab.end}
+            className={({ isActive }) =>
+              `flex items-center gap-2 border-b-[3px] py-4 text-base transition-colors ${
+                isActive
+                  ? 'border-oro font-medium text-vino'
+                  : 'border-transparent text-muted hover:text-ink'
+              }`
+            }
+          >
+            <i className={`ti ${tab.icon} text-lg`} aria-hidden="true" />
+            {tab.label}
+          </NavLink>
+        ))}
+      </div>
     </nav>
   )
 }

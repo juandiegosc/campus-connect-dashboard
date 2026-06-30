@@ -1,6 +1,6 @@
 // Clases compartidas para controles de formulario (consistencia entre portales).
 export const controlClass =
-  'h-10 w-full rounded-lg border border-line bg-white px-3 text-sm text-ink outline-none focus:border-oro'
+  'h-11 w-full rounded-xl border border-line bg-white px-4 text-base text-ink outline-none transition focus:border-vino/50 focus:ring-2 focus:ring-vino/15'
 
 export const textareaClass =
-  'w-full rounded-lg border border-line bg-white p-3 text-sm text-ink outline-none focus:border-oro'
+  'w-full rounded-xl border border-line bg-white p-4 text-base text-ink outline-none transition focus:border-vino/50 focus:ring-2 focus:ring-vino/15'

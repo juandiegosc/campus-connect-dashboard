@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
+import { motion } from 'motion/react'
+import { format } from 'date-fns'
 import { useStudents } from '@/features/students/useStudents'
 import { apiFetch, ApiError } from '@/shared/api/httpClient'
 import { PageHeader } from '@/shared/ui/PageHeader'
@@ -8,16 +10,23 @@ import { Badge } from '@/shared/ui/Badge'
 import { Button } from '@/shared/ui/Button'
 import { Spinner } from '@/shared/ui/Spinner'
 import { EmptyState } from '@/shared/ui/EmptyState'
+import { Reveal } from '@/shared/ui/Reveal'
+import { DatePicker } from '@/shared/ui/DatePicker'
 import { AttendanceSegmented } from '@/shared/ui/SegmentedControl'
 import { controlClass } from '@/shared/ui/styles'
 import { useToast } from '@/shared/ui/useToast'
-import { initials, today } from '@/shared/lib/format'
+import { initials } from '@/shared/lib/format'
 import type { AttendanceStatus, RecordAttendanceResponse, StudentReplica } from '@/types/api'
+
+const rowVariants = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0 },
+}
 
 export function AttendancePage() {
   const { data: students, isLoading, isError, refetch } = useStudents()
   const { notify } = useToast()
-  const [date, setDate] = useState(today)
+  const [date, setDate] = useState<Date>(() => new Date())
   const [search, setSearch] = useState('')
   const [grade, setGrade] = useState('')
   const [marks, setMarks] = useState<Record<string, AttendanceStatus>>({})
@@ -39,13 +48,13 @@ export function AttendancePage() {
 
   const save = useMutation({
     mutationFn: async () => {
+      const dateStr = format(date, 'yyyy-MM-dd')
       const entries = Object.entries(marks)
-      // Un POST por estudiante marcado. allSettled = tolerante a fallos parciales (resiliencia).
       const results = await Promise.allSettled(
         entries.map(([studentId, status]) =>
           apiFetch<RecordAttendanceResponse>('/attendance/records', {
             method: 'POST',
-            body: { studentId, date, status },
+            body: { studentId, date: dateStr, status },
           }),
         ),
       )
@@ -90,25 +99,19 @@ export function AttendancePage() {
   const markedCount = Object.keys(marks).length
 
   return (
-    <>
+    <Reveal>
       <PageHeader
         title="Asistencia del día"
-        actions={
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className={`${controlClass} w-auto`}
-          />
-        }
+        subtitle="Marcá el estado de cada estudiante y guardá."
+        actions={<DatePicker value={date} onChange={setDate} />}
       />
 
-      <div className="mb-3 flex flex-wrap gap-2">
+      <div className="mb-4 flex flex-wrap gap-3">
         <input
           placeholder="Buscar estudiante"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className={`${controlClass} min-w-[180px] flex-1`}
+          className={`${controlClass} min-w-[200px] flex-1`}
         />
         <select
           value={grade}
@@ -131,38 +134,40 @@ export function AttendancePage() {
           message="La lista se llena cuando Secretaría matricula estudiantes (evento StudentEnrolled). Si recién arrancás, pediles que registren alumnos."
         />
       ) : (
-        <Card>
-          <div className="flex items-center gap-3 border-b border-line bg-panel px-4 py-2 text-xs text-muted">
-            <span className="flex-1">Estudiante</span>
-            <span className="w-20">Grado</span>
-            <span className="w-[228px]">Estado</span>
+        <Card className="overflow-hidden">
+          <div className="flex items-center justify-between border-b border-line bg-panel px-5 py-3 text-sm font-medium text-muted">
+            <span>Estudiante</span>
+            <span>Estado</span>
           </div>
-          {filtered.map((s) => (
-            <AttendanceRow
-              key={s.studentId}
-              student={s}
-              value={marks[s.studentId] ?? null}
-              onChange={(v) => setMarks((m) => ({ ...m, [s.studentId]: v }))}
-            />
-          ))}
+          <motion.div
+            initial="hidden"
+            animate="show"
+            variants={{ show: { transition: { staggerChildren: 0.035 } } }}
+          >
+            {filtered.map((s) => (
+              <motion.div key={s.studentId} variants={rowVariants}>
+                <AttendanceRow
+                  student={s}
+                  value={marks[s.studentId] ?? null}
+                  onChange={(v) => setMarks((m) => ({ ...m, [s.studentId]: v }))}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
         </Card>
       )}
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <span className="flex items-center gap-1.5 text-xs text-muted">
-          <i className="ti ti-route" aria-hidden="true" />
-          Trazabilidad: X-Correlation-Id activo
-        </span>
+      <div className="mt-6 flex justify-end">
         <Button
           variant="primary"
           disabled={markedCount === 0 || save.isPending}
           onClick={() => save.mutate()}
         >
-          <i className="ti ti-check" aria-hidden="true" />
+          <i className="ti ti-device-floppy text-lg" aria-hidden="true" />
           {save.isPending ? 'Guardando…' : `Guardar asistencia${markedCount ? ` (${markedCount})` : ''}`}
         </Button>
       </div>
-    </>
+    </Reveal>
   )
 }
 
@@ -176,19 +181,17 @@ function AttendanceRow({
   onChange: (value: AttendanceStatus) => void
 }) {
   return (
-    <div className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
-      <span className="flex flex-1 items-center gap-3">
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-vino-soft text-xs font-medium text-vino">
+    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4 transition-colors last:border-b-0 hover:bg-panel/60">
+      <div className="flex items-center gap-3">
+        <span className="flex h-11 w-11 items-center justify-center rounded-full bg-vino-soft text-base font-medium text-vino">
           {initials(student.fullName)}
         </span>
-        <span className="text-sm text-ink">{student.fullName}</span>
-      </span>
-      <span className="w-20">
-        <Badge className="bg-panel text-muted">{student.grade}</Badge>
-      </span>
-      <span className="w-[228px]">
-        <AttendanceSegmented value={value} onChange={onChange} name={student.fullName} />
-      </span>
+        <div className="leading-tight">
+          <p className="text-base text-ink">{student.fullName}</p>
+          <Badge className="mt-0.5 bg-panel text-muted">{student.grade}</Badge>
+        </div>
+      </div>
+      <AttendanceSegmented value={value} onChange={onChange} name={student.fullName} />
     </div>
   )
 }

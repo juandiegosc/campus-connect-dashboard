@@ -10,21 +10,29 @@ import { Button } from '@/shared/ui/Button'
 import { Field } from '@/shared/ui/Field'
 import { Spinner } from '@/shared/ui/Spinner'
 import { EmptyState } from '@/shared/ui/EmptyState'
+import { Reveal } from '@/shared/ui/Reveal'
 import { controlClass, textareaClass } from '@/shared/ui/styles'
 import { useToast } from '@/shared/ui/useToast'
 import type { ReportIncidentResponse } from '@/types/api'
 
-// El studentId es un ULID de 26 chars: se ELIGE de la lista, nunca se tipea.
-const schema = z.object({
-  studentId: z.string().length(26, 'Elegí un estudiante de la lista.'),
-  type: z.string().min(1, 'Indicá el tipo de incidente.'),
-  severity: z.enum(['Low', 'Medium', 'High']),
-  description: z.string().min(1, 'Describí el incidente.'),
-})
+// El backend acepta `type` como TEXTO LIBRE (no hay catálogo). Curamos categorías en
+// español para consistencia; "Otro" permite especificar uno propio.
+const TYPE_OPTIONS = ['Conducta', 'Salud', 'Seguridad', 'Convivencia', 'Rendimiento académico', 'Otro']
+
+const schema = z
+  .object({
+    studentId: z.string().length(26, 'Elegí un estudiante de la lista.'),
+    type: z.string().min(1, 'Elegí el tipo de incidente.'),
+    customType: z.string().optional(),
+    severity: z.enum(['Low', 'Medium', 'High']),
+    description: z.string().min(1, 'Describí el incidente.'),
+  })
+  .refine((d) => d.type !== 'Otro' || (d.customType?.trim().length ?? 0) > 0, {
+    message: 'Especificá el tipo.',
+    path: ['customType'],
+  })
 
 type FormValues = z.infer<typeof schema>
-
-const TYPE_SUGGESTIONS = ['Behavior', 'Health', 'Safety', 'Academic']
 
 export function IncidentsPage() {
   const { data: students, isLoading, isError } = useStudents()
@@ -34,18 +42,28 @@ export function IncidentsPage() {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { studentId: '', type: '', severity: 'Low', description: '' },
+    defaultValues: { studentId: '', type: '', customType: '', severity: 'Low', description: '' },
   })
 
+  const typeValue = watch('type')
+
   const submit = useMutation({
-    mutationFn: (values: FormValues) =>
-      apiFetch<ReportIncidentResponse>('/attendance/incidents', {
+    mutationFn: (values: FormValues) => {
+      const type = values.type === 'Otro' ? values.customType!.trim() : values.type
+      return apiFetch<ReportIncidentResponse>('/attendance/incidents', {
         method: 'POST',
-        body: values,
-      }),
+        body: {
+          studentId: values.studentId,
+          type,
+          severity: values.severity,
+          description: values.description,
+        },
+      })
+    },
     onSuccess: (res) => {
       notify('success', `Incidente registrado (severidad ${res.severity}).`)
       reset()
@@ -77,8 +95,11 @@ export function IncidentsPage() {
   }
 
   return (
-    <>
-      <PageHeader title="Reportar incidente / novedad" />
+    <Reveal>
+      <PageHeader
+        title="Reportar incidente / novedad"
+        subtitle="Registrá una novedad de conducta o bienestar de un estudiante."
+      />
       {!students || students.length === 0 ? (
         <EmptyState
           icon="ti-users"
@@ -86,10 +107,10 @@ export function IncidentsPage() {
           message="Necesitás estudiantes matriculados (evento StudentEnrolled) para reportar un incidente."
         />
       ) : (
-        <Card className="max-w-xl p-5">
+        <Card className="max-w-2xl p-7">
           <form
             onSubmit={handleSubmit((values) => submit.mutate(values))}
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-5"
           >
             <Field label="Estudiante" error={errors.studentId?.message}>
               <select {...register('studentId')} className={controlClass}>
@@ -102,27 +123,36 @@ export function IncidentsPage() {
               </select>
             </Field>
 
-            <Field label="Tipo" error={errors.type?.message}>
-              <input
-                list="incident-types"
-                {...register('type')}
-                placeholder="Behavior, Health, Safety…"
-                className={controlClass}
-              />
-              <datalist id="incident-types">
-                {TYPE_SUGGESTIONS.map((t) => (
-                  <option key={t} value={t} />
-                ))}
-              </datalist>
-            </Field>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field label="Tipo" error={errors.type?.message}>
+                <select {...register('type')} className={controlClass}>
+                  <option value="">Seleccioná un tipo</option>
+                  {TYPE_OPTIONS.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </Field>
 
-            <Field label="Severidad" error={errors.severity?.message}>
-              <select {...register('severity')} className={controlClass}>
-                <option value="Low">Baja</option>
-                <option value="Medium">Media</option>
-                <option value="High">Alta</option>
-              </select>
-            </Field>
+              <Field label="Severidad" error={errors.severity?.message}>
+                <select {...register('severity')} className={controlClass}>
+                  <option value="Low">Baja</option>
+                  <option value="Medium">Media</option>
+                  <option value="High">Alta</option>
+                </select>
+              </Field>
+            </div>
+
+            {typeValue === 'Otro' && (
+              <Field label="Especificá el tipo" error={errors.customType?.message}>
+                <input
+                  {...register('customType')}
+                  className={controlClass}
+                  placeholder="Ej. Acoso escolar"
+                />
+              </Field>
+            )}
 
             <Field label="Descripción" error={errors.description?.message}>
               <textarea
@@ -133,13 +163,15 @@ export function IncidentsPage() {
               />
             </Field>
 
-            <Button type="submit" variant="primary" disabled={submit.isPending}>
-              <i className="ti ti-flag" aria-hidden="true" />
-              {submit.isPending ? 'Registrando…' : 'Reportar incidente'}
-            </Button>
+            <div className="flex justify-end">
+              <Button type="submit" variant="primary" disabled={submit.isPending}>
+                <i className="ti ti-flag text-lg" aria-hidden="true" />
+                {submit.isPending ? 'Registrando…' : 'Reportar incidente'}
+              </Button>
+            </div>
           </form>
         </Card>
       )}
-    </>
+    </Reveal>
   )
 }
