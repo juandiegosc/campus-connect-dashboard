@@ -1,5 +1,9 @@
 // Contratos del backend CampusConnect 360 (serialización camelCase de System.Text.Json).
-// Estos tipos reflejan los DTO reales de Identity y Attendance — no inventar campos.
+// Verificados contra el backend vivo — no inventar campos.
+//
+// Ojo: docs/02-contratos-api-eventos.md describe un contrato PLANIFICADO que nunca se implementó
+// (totalEnrolledStudents, ecosystemStatus, respuestas envueltas en { items }). El contrato real es
+// el de docs/NOTIFICATIONS-ANALYTICS.md, y las listas vienen como arrays planos.
 
 export type UserRole = 'Secretaria' | 'Finanzas' | 'Docente' | 'Direccion'
 
@@ -18,43 +22,61 @@ export interface CurrentUser {
   role: UserRole
 }
 
-export interface StudentReplica {
-  studentId: string
-  fullName: string
-  grade: string
-  schoolId: string
-  lastUpdatedAt: string
+// ── Analytics ─────────────────────────────────────────────────────────────
+
+// `status` deriva solo de failedMessages: mide la salud de la MENSAJERÍA, no la disponibilidad
+// de los servicios. Devolvería 'ok' con Payments caído. Los /health públicos miden el otro eje.
+export type EcosystemStatus = 'ok' | 'degraded'
+
+export interface DashboardDto {
+  totalStudents: number
+  paymentsConfirmed: number
+  paymentsPending: number
+  attendanceRecorded: number
+  incidentsReported: number
+  notificationsSent: number
+  eventsProcessed: number
+  failedMessages: number
+  status: EcosystemStatus
+  generatedAt: string
 }
 
-export type AttendanceStatus = 'Present' | 'Absent' | 'Late'
-
-export interface AttendanceRecordDto {
-  recordId: string
-  studentId: string
-  date: string
-  status: AttendanceStatus
+export interface EventLogDto {
+  eventType: string
+  entityId: string
+  // Null en todos los eventos publicados por servicios de negocio (StudentEnrolled,
+  // PaymentConfirmed, AttendanceRecorded, IncidentReported). Solo Notifications y Academic
+  // lo propagan. La trazabilidad por cadena que promete el contrato no está completa.
+  correlationId: string | null
+  occurredAt: string
+  receivedAt: string
 }
 
-export type IncidentSeverity = 'Low' | 'Medium' | 'High'
+// ── Notifications ─────────────────────────────────────────────────────────
 
-export interface IncidentSummary {
-  incidentId: string
-  studentId: string
-  type: string
-  severity: IncidentSeverity
+export type NotificationStatus = 'Sent' | 'Failed'
+
+// Canales que el backend acepta como válidos. Cualquier otro valor se persiste igual,
+// con status 'Failed' — por eso NotificationDto.channel es string, no esta unión.
+export const VALID_CHANNELS = ['Email', 'Sms', 'Push'] as const
+export type NotificationChannel = (typeof VALID_CHANNELS)[number]
+
+export interface NotificationDto {
+  notificationId: string
+  sourceEvent: string
+  studentId: string | null
+  channel: string
+  recipient: string
+  subject: string
+  body: string
+  status: NotificationStatus
+  failureReason: string | null
+  createdAt: string
 }
 
-export interface StudentHistory {
-  attendance: AttendanceRecordDto[]
-  incidents: IncidentSummary[]
-}
-
-export interface RecordAttendanceResponse {
-  recordId: string
-  status: string
-}
-
-export interface ReportIncidentResponse {
-  incidentId: string
-  severity: string
+export interface SendNotificationRequest {
+  recipient: string
+  channel: string
+  subject: string
+  body: string
 }

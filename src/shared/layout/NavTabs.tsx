@@ -1,9 +1,9 @@
 import { NavLink } from 'react-router-dom'
 
 const tabs = [
-  { to: '/', label: 'Asistencia', icon: 'ti-checklist', end: true },
-  { to: '/incidentes', label: 'Incidentes', icon: 'ti-flag', end: false },
-  { to: '/estudiantes', label: 'Estudiantes', icon: 'ti-users', end: false },
+  { to: '/', label: 'Informe', icon: 'ti-report-analytics', end: true },
+  { to: '/eventos', label: 'Bitácora', icon: 'ti-timeline-event', end: false },
+  { to: '/notificaciones', label: 'Notificaciones', icon: 'ti-bell', end: false },
 ]
 
 export function NavTabs() {
@@ -18,7 +18,7 @@ export function NavTabs() {
             className={({ isActive }) =>
               `flex items-center gap-2 border-b-[3px] py-4 text-base transition-colors ${
                 isActive
-                  ? 'border-oro font-medium text-vino'
+                  ? 'border-oro font-medium text-azul'
                   : 'border-transparent text-muted hover:text-ink'
               }`
             }

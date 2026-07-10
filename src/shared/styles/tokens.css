@@ -1,11 +1,11 @@
 @import 'tailwindcss';
 
-/* Design tokens UDLA — base reutilizable por los 3 portales.
-   Colores y tipografías derivados de la identidad universitaria (vino + oro). */
+/* Design tokens — azul académico + oro.
+   El primario de este portal diverge del vino de los otros tres a pedido de Dirección. */
 @theme {
-  --color-vino: #7a1b2e;
-  --color-vino-dark: #4e0f1c;
-  --color-vino-soft: #f1e3e6;
+  --color-azul: #1b365d;
+  --color-azul-dark: #0e1f38;
+  --color-azul-soft: #e3e8f1;
   --color-oro: #b0892f;
   --color-oro-soft: #e9c66b;
 
@@ -23,6 +23,13 @@
   --color-late: #b0892f;
   --color-late-bg: #f6eedd;
   --color-late-ink: #6e5418;
+
+  /* Relleno de gráficos. El azul de marca (#1b365d) falla DOS comprobaciones como relleno:
+     queda fuera de la banda de luminosidad (L=0.333) y bajo el piso de croma (0.077) — como
+     área de color se lee gris azulado, no azul. Este es el mismo tono, un paso más claro, y
+     pasa las cuatro (banda, croma, separación CVD ΔE 92.9 contra el oro, contraste).
+     Solo para rellenos: en texto y UI manda el azul de marca. */
+  --color-azul-chart: #2f5d9e;
 
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-display: 'Spectral', Georgia, serif;
@@ -49,58 +56,20 @@
   }
 }
 
-/* ── react-day-picker: theming elegante UDLA ───────────────────────────── */
-.rdp-root {
-  --rdp-accent-color: var(--color-vino);
-  --rdp-accent-background-color: var(--color-vino-soft);
-  --rdp-today-color: var(--color-vino);
-  --rdp-font-family: var(--font-sans);
-  --rdp-day-width: 2.5rem;
-  --rdp-day-height: 2.5rem;
-  --rdp-day_button-width: 2.5rem;
-  --rdp-day_button-height: 2.5rem;
-  --rdp-day_button-border-radius: 0.75rem;
-  --rdp-selected-border: none;
-}
-.rdp-month_caption {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  text-transform: capitalize;
-  color: var(--color-ink);
-}
-.rdp-day_button:hover {
-  background: var(--color-panel);
-}
+@layer components {
+  /* Cifras del informe: sin tabular-nums bailan al refrescar cada 10 s. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
 
-/* Calendario grande para el historial */
-.cal-lg .rdp-root {
-  --rdp-day-width: 3rem;
-  --rdp-day-height: 3rem;
-  --rdp-day_button-width: 3rem;
-  --rdp-day_button-height: 3rem;
-}
-.cal-lg .rdp-month_caption {
-  font-size: 1.25rem;
-}
-
-/* Días marcados por estado de asistencia */
-.rdp-day.day-present .rdp-day_button {
-  background: var(--color-present-bg);
-  color: var(--color-present-ink);
-  font-weight: 500;
-}
-.rdp-day.day-absent .rdp-day_button {
-  background: var(--color-absent-bg);
-  color: var(--color-absent-ink);
-  font-weight: 500;
-}
-.rdp-day.day-late .rdp-day_button {
-  background: var(--color-late-bg);
-  color: var(--color-late-ink);
-  font-weight: 500;
-}
-/* Día seleccionado: anillo vino visible por encima del color de estado */
-.rdp-day.rdp-selected .rdp-day_button {
-  box-shadow: 0 0 0 2px var(--color-vino);
-  color: var(--color-vino);
+  /* Eyebrow editorial. Rotula las secciones del informe, que son los bounded contexts
+     del backend — no es decoración, es el mapa del ecosistema. */
+  .eyebrow {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
 }

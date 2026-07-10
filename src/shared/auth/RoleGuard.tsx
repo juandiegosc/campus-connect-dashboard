@@ -18,12 +18,13 @@ export function RoleGuard({ allow, children }: RoleGuardProps) {
   }
 
   if (user && !allow.includes(user.role)) {
+    const expected = allow.length === 1 ? `el rol ${allow[0]}` : `los roles ${allow.join(', ')}`
     return (
       <div className="flex min-h-screen items-center justify-center bg-panel px-4">
         <EmptyState
           icon="ti-lock"
           title="No tienes acceso a este portal"
-          message={`Este portal es para el rol Docente. Tu sesión es ${user.role}.`}
+          message={`Este portal es para ${expected}. Tu sesión es ${user.role}.`}
         />
       </div>
     )

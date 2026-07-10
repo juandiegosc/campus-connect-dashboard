@@ -1,13 +1,15 @@
 import { useAuth } from '@/shared/auth/useAuth'
-import { useHealth } from '@/shared/api/useHealth'
+import { useEcosystemHealth } from '@/shared/api/useHealth'
 import { initials } from '@/shared/lib/format'
 
 export function TopBar() {
   const { user, logout } = useAuth()
-  const online = useHealth()
+  const { online, total, isLoading } = useEcosystemHealth()
+
+  const allOnline = online === total
 
   return (
-    <header className="border-b-2 border-oro/70 bg-[linear-gradient(100deg,#7a1b2e_0%,#5e1422_55%,#4e0f1c_100%)] text-white">
+    <header className="border-b-2 border-oro/70 bg-[linear-gradient(100deg,#1b365d_0%,#152a49_55%,#0e1f38_100%)] text-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-4">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/12">
@@ -15,17 +17,19 @@ export function TopBar() {
           </span>
           <div className="leading-tight">
             <p className="font-display text-lg">CampusConnect 360</p>
-            <p className="text-sm text-white/80">Portal Docente / Bienestar</p>
+            <p className="text-sm text-white/80">Dashboard directivo</p>
           </div>
         </div>
 
         <div className="flex items-center gap-5">
-          <span className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-sm text-white/90">
+          <span className="tabular flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-sm text-white/90">
             <span
-              className={`h-2.5 w-2.5 rounded-full ${online ? 'bg-[#67d6a2]' : 'bg-white/40'}`}
+              className={`h-2.5 w-2.5 rounded-full ${
+                isLoading ? 'bg-white/40' : allOnline ? 'bg-[#67d6a2]' : 'bg-[#e8a0a0]'
+              }`}
               aria-hidden="true"
             />
-            {online ? 'En línea' : 'Sin conexión'}
+            {isLoading ? 'Consultando…' : `${online}/${total} servicios`}
           </span>
 
           <div className="flex items-center gap-2.5 text-base">

@@ -50,7 +50,7 @@ export function LoginPage() {
   return (
     <div className="grid min-h-screen lg:grid-cols-[1.1fr_1fr]">
       {/* Panel de marca */}
-      <div className="relative hidden flex-col justify-between overflow-hidden bg-[linear-gradient(135deg,#7a1b2e_0%,#5e1422_55%,#4e0f1c_100%)] p-12 text-white lg:flex">
+      <div className="relative hidden flex-col justify-between overflow-hidden bg-[linear-gradient(135deg,#1b365d_0%,#152a49_55%,#0e1f38_100%)] p-12 text-white lg:flex">
         <div className="flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/12">
             <i className="ti ti-school text-2xl text-oro-soft" aria-hidden="true" />
@@ -60,12 +60,13 @@ export function LoginPage() {
         <div>
           <div className="mb-4 h-1 w-16 rounded-full bg-oro" />
           <h2 className="font-display text-4xl leading-tight">
-            Portal Docente
-            <br />y Bienestar
+            Dashboard
+            <br />
+            directivo
           </h2>
           <p className="mt-4 max-w-md text-lg text-white/80">
-            Toma asistencia, registra incidentes y consulta el historial de tus estudiantes en un
-            solo lugar.
+            La foto consolidada del ecosistema: matrícula, finanzas, operación y la salud del bus de
+            eventos que lo conecta todo.
           </p>
         </div>
         <p className="text-sm text-white/60">Universidad · gestión escolar integrada</p>
@@ -80,12 +81,12 @@ export function LoginPage() {
           className="w-full max-w-sm"
         >
           <div className="mb-6 flex items-center gap-3 lg:hidden">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-vino">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-azul">
               <i className="ti ti-school text-2xl text-oro-soft" aria-hidden="true" />
             </span>
             <div>
               <p className="font-display text-lg text-ink">CampusConnect 360</p>
-              <p className="text-sm text-muted">Portal Docente / Bienestar</p>
+              <p className="text-sm text-muted">Dashboard directivo</p>
             </div>
           </div>
 
@@ -98,7 +99,7 @@ export function LoginPage() {
                 <input
                   {...register('username')}
                   className={controlClass}
-                  placeholder="docente1"
+                  placeholder="director1"
                   autoComplete="username"
                 />
               </Field>
@@ -123,7 +124,7 @@ export function LoginPage() {
           </div>
 
           <p className="mt-5 text-center text-sm text-muted">
-            Usuario de prueba: docente1 / Admin1234!
+            Usuario de prueba: director1 / Admin1234!
           </p>
         </motion.div>
       </div>
